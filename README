@@ -1,0 +1,43 @@
+README for OpenWrt_NXT_Server
+
+What it is
+==========
+
+OpenWrt_NXT_Server is a LEGO(R) MINDSTORMS(R) NXT 2.0 server package
+for OpenWrt (https://openwrt.org).
+
+It listens on UDP port 35000. When command received, it executes it
+on NXT and sends response (if any) back.
+
+
+LEGO and MINDSTORMS are trademarks of the LEGO Group.
+
+
+Whodunit
+========
+
+Copyright (C) 2013 Pavel Prokhorov (pavelvpster@gmail.com)
+
+
+Legal
+=====
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Or find it as the file COPYING in this folder.
+
+
+
+
+Last revised: 2013-06-01, Pavel Prokhorov
