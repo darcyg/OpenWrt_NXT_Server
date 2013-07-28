@@ -18,8 +18,11 @@
  * 
  */
 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
 #include <libusb-1.0/libusb.h>
 
@@ -70,6 +73,29 @@ int main(int argc, char** argv) {
 	// Hello, world!
 	
 	printf("\n OpenWrt_NXT_Server. Copyright 2013 Pavel Prokhorov \n\n");
+
+	
+	// Разбираем командную строку
+
+	if (argc < 2) {
+		
+		printf("Usage: OpenWrt_NXT_Server <port> [-nodebug] \n");
+		
+		return -1;
+	}
+	
+	// Порт
+	
+	int port = atoi(argv[1]);
+	
+	// Печать отладочных сообщений
+	
+	bool debug = true;
+	
+	if (argc > 2) {
+		
+		if (strcmp(argv[2], "-nodebug") == 0) debug = false;
+	}
 	
 	
 	// Инициализируем библиотеку USB
@@ -78,7 +104,7 @@ int main(int argc, char** argv) {
 	
 	if (r < 0) {
 		
-		printf("ERROR! USB library initialization error.\n");
+		if (debug) printf("ERROR! USB library initialization error.\n");
 		
 		return -1;
 	}
@@ -89,7 +115,7 @@ int main(int argc, char** argv) {
 	
 	if (dev == NULL) {
 		
-		printf("ERROR! NXT not found.\n");
+		if (debug) printf("ERROR! NXT not found.\n");
 		
 		// Завершаем работу с библиотекой USB
 
@@ -98,7 +124,7 @@ int main(int argc, char** argv) {
 		return -2;
 	}
 	
-	printf("NXT found.\n");
+	if (debug) printf("NXT found.\n");
 	
 	// Выбираем интерфейс 0
 	
@@ -106,7 +132,7 @@ int main(int argc, char** argv) {
 	
 	if (r < 0) {
 		
-		printf("ERROR! NXT is busy.\n");
+		if (debug) printf("ERROR! NXT is busy.\n");
 		
 		// Закрываем устройство
 
@@ -119,7 +145,7 @@ int main(int argc, char** argv) {
 		return -3;
 	}
 	
-	printf("NXT is ready.\n");
+	if (debug) printf("NXT is ready.\n");
 	
 	// Посигналим
 	
@@ -138,7 +164,7 @@ int main(int argc, char** argv) {
 	
 	if (r < 0) {
 		
-		printf("ERROR! USB transfer error.\n");
+		if (debug) printf("ERROR! USB transfer error.\n");
 	}
 	
 	
@@ -148,7 +174,7 @@ int main(int argc, char** argv) {
 	
 	if (sock < 0) {
 		
-		printf("ERROR! Unable to create UDP socket.\n");
+		if (debug) printf("ERROR! Unable to create UDP socket.\n");
 
 		// Освобождаем интерфейс
 
@@ -173,7 +199,7 @@ int main(int argc, char** argv) {
 	
 	address.sin_family = AF_INET;
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
-	address.sin_port = htons(35000);
+	address.sin_port = htons(port);
 	
 	// Биндим адрес
 	
@@ -181,7 +207,7 @@ int main(int argc, char** argv) {
 	
 	if (r < 0) {
 		
-		printf("ERROR! Unable to bind to port.\n");
+		if (debug) printf("ERROR! Unable to bind to port.\n");
 
 		// Закрываем сокет
 
@@ -204,7 +230,7 @@ int main(int argc, char** argv) {
 	
 	// Ожидаем сообщений
 
-	printf("Listen for commands...\n");
+	if (debug) printf("Listen for commands on port %d ...\n", port);
 	
 	while (1) {
 		
@@ -222,21 +248,34 @@ int main(int argc, char** argv) {
 		
 		if (n == 1 && message[0] == 0xFF) {
 			
-			printf("  Received command: Exit.\n");
+			if (debug) printf("  Received command: Exit.\n");
 
 			break;
+		}
+		
+		// А может echo
+		
+		if (message[0] == 0xF0) {
+			
+			if (debug) printf("  Received command: Echo.\n");
+			
+			// Отправляем echo
+
+			sendto(sock, &message, n, 0, (struct sockaddr*)&from, len);
+			
+			continue ;
 		}
 		
 		// Проверяем OPCODE
 		
 		if (message[1] < MIN_OPCODE || message[1] > MAX_OPCODE) {
 			
-			printf("  Received bad command!\n");
+			if (debug) printf("  Received bad command!\n");
 			
 			continue ;
 		}
 		
-		printf("  Received command: %s.\n", commands[ message[1] ] );
+		if (debug) printf("  Received command: %s.\n", commands[ message[1] ] );
 		
 		// Отправляем команду на устройство
 		
@@ -244,7 +283,7 @@ int main(int argc, char** argv) {
 		
 		if (r < 0) {
 
-			printf("ERROR! USB transfer error.\n");
+			if (debug) printf("ERROR! USB transfer error.\n");
 		}
 		
 		// Нужен ли клиенту ответ?
@@ -257,12 +296,12 @@ int main(int argc, char** argv) {
 		
 		if (r < 0) {
 
-			printf("ERROR! USB transfer error.\n");
+			if (debug) printf("ERROR! USB transfer error.\n");
 		}
 		
 		// Отправляем его клиенту
 		
-		sendto(sock, &message, t, 0, &from, len);
+		sendto(sock, &message, t, 0, (struct sockaddr*)&from, len);
 	}
 	
 	// Закрываем сокет

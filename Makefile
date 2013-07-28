@@ -10,7 +10,7 @@ include $(INCLUDE_DIR)/package.mk
 
 define Package/OpenWrt_NXT_Server
 	SECTION:=utils
-	CATEGORY:=Utilities
+	CATEGORY:=pavelvpster
 	TITLE:=NXT Server
 	DEPENDS:=libusb-1.0
 endef
@@ -24,7 +24,7 @@ define Build/Prepare
 	$(CP) ./src/* $(PKG_BUILD_DIR)/
 endef
 
-define Package/openwrt_NXT_Server/install
+define Package/OpenWrt_NXT_Server/install
 	$(INSTALL_DIR) $(1)/usr/sbin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/OpenWrt_NXT_Server $(1)/usr/sbin/
 endef
